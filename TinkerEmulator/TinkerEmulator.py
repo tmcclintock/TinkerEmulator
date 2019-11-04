@@ -77,6 +77,9 @@ class TinkerEmulator(object):
             A a B b C c tinker parameters
 
         """
+        assert len(cosmological_parameters) == 7
+        assert np.ndim(redshift) == 0
+        
         x = 1. / (1. + redshift) - 0.5
         A0 = 4.2828605
         a0 = 0.4722138

@@ -10,3 +10,5 @@ def test_TE_basic():
     #Smoke tests
     TE = TinkerEmulator.TinkerEmulator()
 
+if __name__ == "__main__":
+    test_TE_basic()

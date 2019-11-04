@@ -23,7 +23,7 @@ class TinkerEmulator(object):
         means = self.means
         stds = np.sqrt(self.variances)
         N = len(means[0])
-        Ncos = len(means)
+        Ncos = len(hps)
         
         for i in range(N):
             k = george.kernels.ExpSquaredKernel(hps, ndim=Ncos)

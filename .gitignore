@@ -1,3 +1,7 @@
+#compiled files
+src/*.o
+src/a.out
+
 # emacs backup files
 *~
 

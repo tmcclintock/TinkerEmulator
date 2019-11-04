@@ -1,13 +1,13 @@
 """Emulates parameters in the Tinker mass function.
 """
 import numpy as np
-import scipy as sp
+import scipy.optimize as op
 import george
 
 class TinkerEmulator(object):
 
     def __init__(self):
-        self.pars = np.loadtxt("./data/parameters.txt")
+        self.cosmo_pars = np.loadtxt("./data/parameters.txt")
         self.means = np.loadtxt("./data/rotated_means.txt")
         self.variances = np.loadtxt("./data/rotated_variances.txt")
         self.rotation_matrix = np.loadtxt("./data/rotation_matrix.txt")
@@ -19,7 +19,7 @@ class TinkerEmulator(object):
         self._train()
 
     def _train(self):
-        hps = np.std(self.pars, 0) #Guess for hyperparameters
+        hps = np.std(self.cosmo_pars, 0) #Guess for hyperparameters
         means = self.means
         stds = np.sqrt(self.variances)
         N = len(means[0])
@@ -28,7 +28,19 @@ class TinkerEmulator(object):
         for i in range(N):
             k = george.kernels.ExpSquaredKernel(hps, ndim=Ncos)
             gp = george.GP(k, mean=np.mean(means[:,i]))
-            gp.compute(self.pars, stds[:,i])
+            gp.compute(self.cosmo_pars, stds[:,i])
+
+            def nll(p):
+                gp.set_parameter_vector(p)
+                ll = gp.log_likelihood(means[:, i], quiet=True)
+                return -ll if np.isfinite(ll) else 1e25
+            def grad_nll(p):
+                gp.set_parameter_vector(p)
+                return -gp.grad_log_likelihood(means[:, i], quiet=True)
+            p0 = gp.get_parameter_vector()
+            result = op.minimize(nll, p0, jac=grad_nll)
+            gp.set_parameter_vector(result.x)
+            
             self.GP_list.append(gp)
         return
         
@@ -46,10 +58,11 @@ class TinkerEmulator(object):
             B0 c0 A1 B1
 
         """
+        cp = np.atleast_2d(cosmological_parameters)
         means = self.means.T
         R = self.rotation_matrix
-        p_r = np.array([gp.predict(y, cosmological_parameters)[0]
-                           for y,gp in zip(means, self.GP_list)])
+        p_r = np.array([gp.predict(y, cp)[0]
+                        for y, gp in zip(means, self.GP_list)])
         return np.dot(R, p_r).flatten()
 
     def predict_tinker_parameters(self, cosmological_parameters, redshift):

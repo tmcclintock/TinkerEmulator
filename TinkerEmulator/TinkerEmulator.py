@@ -7,10 +7,13 @@ import george
 class TinkerEmulator(object):
 
     def __init__(self):
-        self.cosmo_pars = np.loadtxt("./data/parameters.txt")
-        self.means = np.loadtxt("./data/rotated_means.txt")
-        self.variances = np.loadtxt("./data/rotated_variances.txt")
-        self.rotation_matrix = np.loadtxt("./data/rotation_matrix.txt")
+        self.cosmo_pars = np.loadtxt("../data/parameters.txt")
+        self.means = np.loadtxt("../data/rotated_means.txt")
+        self.variances = np.loadtxt("../data/rotated_variances.txt")
+        self.rotation_matrix = np.loadtxt("../data/rotation_matrix.txt")
+        self.lamb = []
+        for i in range(self.variances.shape[-1]):
+            self.lamb.append([])
 
         #attributes that will be filled
         self.GP_list = []
@@ -20,6 +23,7 @@ class TinkerEmulator(object):
 
     def _train(self):
         hps = np.std(self.cosmo_pars, 0) #Guess for hyperparameters
+        print(hps.shape)
         means = self.means
         stds = np.sqrt(self.variances)
         N = len(means[0])
@@ -38,8 +42,12 @@ class TinkerEmulator(object):
                 gp.set_parameter_vector(p)
                 return -gp.grad_log_likelihood(means[:, i], quiet=True)
             p0 = gp.get_parameter_vector()
+            print(p0)
+            print(hps)
             result = op.minimize(nll, p0, jac=grad_nll)
             gp.set_parameter_vector(result.x)
+            print(i, result.x)
+            self.lamb[i] = result.x
             
             self.GP_list.append(gp)
         return

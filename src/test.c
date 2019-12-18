@@ -30,7 +30,6 @@
 #include "tinker_emulator.c"
 
 int main(){
-  Emu_tinker_bias_param emu_param = {0., 0., 0., 0., 0., 0.};
   //Test kernel
   double x0[7] = {0.0043*pow(0.7,2), 0.286*pow(0.7,2), -1, 1, 3.0, 70, 3.0};
   double x1[7] = {0.0043*pow(0.7,2), 0.286*pow(0.7,2), -1, 1, 3.0, 70, 5.0};
@@ -38,5 +37,20 @@ int main(){
   //Test bias emulator 
   double emu_tinker_bias_param[6];
   predict_tinker_bias_parameters(0.0043*pow(0.7,2), 0.286*pow(0.7,2), -1, 1, 3.0, 70, 3.0, 0.3, emu_tinker_bias_param);
-  for(int i=0; i<tinkerEmuParam.tinker_nparam; ++i) printf("%d, %e\n", i,emu_tinker_bias_param[i]);
+  double bias_ref[6] = {4.432419358797392, 0.32058653615384625, 1.3586846172228393, 1.347376928846154, 0.728081326923077, -1.0947315110189246}; 
+  printf("bias result:\n");
+  printf("item c ref\n");
+  for(int i=0; i<tinkerEmuParam.tinker_bias_nparam_redshift; ++i) printf("%d, %e, %e\n", i,emu_tinker_bias_param[i], bias_ref[i]);
+  printf("####################\n");
+  
+  //Test hmf emulator
+  double emu_tinker_hmf_param[4];
+  double hmf_ref[4] = { 2.5198116919192444, 0.8454997909106351, 0.5441108055593771, 1.3001900391246013}; 
+  predict_tinker_hmf_parameters(0.0043*pow(0.7,2), 0.286*pow(0.7,2), -1, 1, 3.0, 70, 3.0, 0.3, emu_tinker_hmf_param);
+  printf("hmf result:\n");
+  printf("item c ref\n");
+  for(int i=0; i<tinkerEmuParam.tinker_hmf_nparam_redshift; ++i) printf("%d, %e, %e\n", i,emu_tinker_hmf_param[i], hmf_ref[i]);
+  printf("####################\n");
+  
+    
 }
